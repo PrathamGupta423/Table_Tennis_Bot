@@ -26,7 +26,9 @@ class Simulation:
     def simulate(iter = 100):
         for i in range(iter):
             p.stepSimulation()
-            Simulation.save_image(0,str(i))
+            
+            for j , camera in enumerate(Simulation.camera_list):
+                Simulation.save_image(j, "image" + str(i))
             time.sleep(1./240.)
 
     def disconnect():
@@ -86,9 +88,8 @@ class Simulation:
     def save_image(camera_id,name):
         camera = Simulation.camera_list[camera_id]
         img = Simulation.get_camera_image(camera_id)
-        path = "images" + "/" + name + ".png"
-        cv2.imwrite(path, img)
-
+        folder = camera["image_folder"]
+        cv2.imwrite(folder + "/" + name + ".png", img)
     
         
 
@@ -97,11 +98,18 @@ if __name__ == "__main__":
 
     Simulation.start()
     ball = Simulation.add_ball(radius=0.1 , position=[0, 1, 1])
+
     view_matrix = Simulation.generate_view_matrix(target_position=[0, 0, 0], distance=2, yaw=45, pitch=-30, roll=0 , upaxisIndex=2)
     projection_matrix = Simulation.generate_projection_matrix()
-    image_folder = "images"
+    image_folder = "images/camera1"
     Simulation.add_camera(640,480,view_matrix, projection_matrix, image_folder)
-    Simulation.simulate(1000)
+
+    view_matrix = Simulation.generate_view_matrix(target_position=[0, 0, 0], distance=-2, yaw=135, pitch=-30, roll=0 , upaxisIndex=2)
+    projection_matrix = Simulation.generate_projection_matrix()
+    image_folder = "images/camera2"
+    Simulation.add_camera(640,480,view_matrix, projection_matrix, image_folder)
+
+    Simulation.simulate(100)
     Simulation.disconnect()
 
 
