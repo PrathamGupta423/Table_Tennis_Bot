@@ -2,10 +2,13 @@ import pybullet as p
 import pybullet_data
 import numpy as np
 import time
+import os
+import cv2
 
 class Simulation:
 
     plane = None
+    camera_list = []
 
     def start():
         p.connect(p.GUI)
@@ -23,16 +26,81 @@ class Simulation:
     def simulate(iter = 100):
         for i in range(iter):
             p.stepSimulation()
+            Simulation.save_image(0,str(i))
             time.sleep(1./240.)
 
     def disconnect():
         p.disconnect()
+
+    def add_camera(width, height, view_matrix, projection_matrix, image_folder):
+
+        if not os.path.exists(image_folder):
+            os.makedirs(image_folder)
+
+        cam = {
+            "view_matrix": view_matrix,
+            "projection_matrix": projection_matrix,
+            "image_folder": image_folder,
+            "width": width,
+            "height": height
+        }
+        Simulation.camera_list.append(cam)
+
+    def generate_view_matrix(target_position = [0,0,0], distance=2, yaw=45, pitch=-30, roll=0 , upaxisIndex=2):
+        view_matrix = p.computeViewMatrixFromYawPitchRoll(
+            cameraTargetPosition=target_position,
+            distance=distance,
+            yaw=yaw,
+            pitch=pitch,
+            roll=roll,
+            upAxisIndex=upaxisIndex
+        )
+        return view_matrix
+    
+    def generate_projection_matrix(fov = 60, aspect = 640/480, near = 0.1, far= 100):
+        projection_matrix = p.computeProjectionMatrixFOV(
+            fov = fov,
+            aspect = aspect,
+            nearVal = near,
+            farVal = far
+        )
+        return projection_matrix
+    
+    def get_camera_image(camera_id = 0):
+        camera = Simulation.camera_list[camera_id]
+        img = p.getCameraImage(
+            width=camera["width"], 
+            height=camera["height"], 
+            viewMatrix=camera["view_matrix"],
+            projectionMatrix=camera["projection_matrix"]
+        )
+        width=camera["width"]
+        height=camera["height"]
+
+        img = np.reshape(img[2], (height, width, 4))[:,:,:3]
+    
+
+
+        return img
+    
+    def save_image(camera_id,name):
+        camera = Simulation.camera_list[camera_id]
+        img = Simulation.get_camera_image(camera_id)
+        path = "images" + "/" + name + ".png"
+        cv2.imwrite(path, img)
+
+    
+        
 
 
 if __name__ == "__main__":
 
     Simulation.start()
     ball = Simulation.add_ball(radius=0.1 , position=[0, 1, 1])
+    view_matrix = Simulation.generate_view_matrix(target_position=[0, 0, 0], distance=2, yaw=45, pitch=-30, roll=0 , upaxisIndex=2)
+    projection_matrix = Simulation.generate_projection_matrix()
+    image_folder = "images"
+    Simulation.add_camera(640,480,view_matrix, projection_matrix, image_folder)
     Simulation.simulate(1000)
     Simulation.disconnect()
 
