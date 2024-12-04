@@ -97,14 +97,22 @@ class Simulation:
 if __name__ == "__main__":
 
     Simulation.start()
-    ball = Simulation.add_ball(radius=0.1 , position=[0, 1, 1])
+    ball = Simulation.add_ball(radius=0.1 , position=[0, 0.3, 1])
+    ball_green = Simulation.add_ball(radius=0.05 , position=[0, 0, 0], color=[0, 1, 0, 1])
+    ball_blue = Simulation.add_ball(radius=0.05 , position=[1, 0, 0], color=[0, 0, 1, 1])
+    ball_black = Simulation.add_ball(radius=0.05 , position=[0.5, 0.5, 0], color=[0, 0, 0, 1])
 
-    view_matrix = Simulation.generate_view_matrix(target_position=[0, 0, 0], distance=2, yaw=45, pitch=-30, roll=0 , upaxisIndex=2)
+
+    d = 2*np.sqrt(2)
+
+    view_matrix = Simulation.generate_view_matrix(target_position=[0, 0, 0], distance=d, yaw=0, pitch=-45, roll=0 , upaxisIndex=2)
+    print(view_matrix)
     projection_matrix = Simulation.generate_projection_matrix()
     image_folder = "images/camera1"
     Simulation.add_camera(640,480,view_matrix, projection_matrix, image_folder)
 
-    view_matrix = Simulation.generate_view_matrix(target_position=[0, 0, 0], distance=-2, yaw=135, pitch=-30, roll=0 , upaxisIndex=2)
+    view_matrix = Simulation.generate_view_matrix(target_position=[0, 0, 0], distance=d, yaw=180, pitch=-45, roll=0 , upaxisIndex=2)
+    print(view_matrix)
     projection_matrix = Simulation.generate_projection_matrix()
     image_folder = "images/camera2"
     Simulation.add_camera(640,480,view_matrix, projection_matrix, image_folder)
